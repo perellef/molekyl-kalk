@@ -1,8 +1,10 @@
 
 from register import Register
 from isotopformel import Isotopformel
+from number_styles import subscript
 
 import re
+
 def kombs(n,m,del_komb=[]): # n = sum av isotopene, m = antall unike isotoper
 
     if m==1:
@@ -14,7 +16,7 @@ def kombs(n,m,del_komb=[]): # n = sum av isotopene, m = antall unike isotoper
         yield from kombs(n,m-1,del_komb + [i])
 
 class Molekylformel:
-    
+
     @classmethod
     def lag(cls,formel):
 
@@ -38,18 +40,45 @@ class Molekylformel:
 
         return cls(molekylformel)
         
+    @classmethod
+    def fra_isotopformel(cls,isotopformel):
+        formel = isotopformel.hent_formel()
+
+        molekylformel = {}
+        for isotop,antall in formel.items():
+
+            grunnstoff = re.findall('\d+|\D+',isotop)[1]
+
+            try:
+                molekylformel[grunnstoff] += antall
+            except KeyError:
+                molekylformel[grunnstoff] = antall
+
+        return cls.lag(molekylformel)
+
+
     def __init__(self,molekylformel):
         self._molekylformel = molekylformel
-        self._isotopfordeling = self.__finn_isotopfordeling()
+        self._isotopfordeling = None
+
+    def trenger_isotopfordeling(f) :
+        def indre(self) :
+            if self._isotopfordeling==None:
+                self.__finn_isotopfordeling()
+            f(self)
+        return indre
 
     def __str__(self):
-        output = "molekylformel: "
+
+        grunnstoffer = ["C","H","N","O","S","Cl","Br","F","I","Si","P"]
+        sortert_formel = {k:v for x in grunnstoffer for k,v in self._molekylformel.items() if k==x}
+        
+        output = ""
         for grunnstoff,antall in self._molekylformel.items():
-            output += f"{grunnstoff}{antall} "
+            output += f"{grunnstoff}{subscript(antall)}"
         return output
 
     def __finn_isotopfordeling(self):
-
         isotopfordeling = [{}]
 
         for grunnstoff,n in self._molekylformel.items():
@@ -73,8 +102,9 @@ class Molekylformel:
 
             isotopfordeling = temp
 
-        return [Isotopformel.lag(formel) for formel in isotopfordeling]
+        self._isotopfordeling = [Isotopformel.lag(formel) for formel in isotopfordeling]
 
+    @trenger_isotopfordeling
     def beregn_masse(self):
         m = 0
         for isotopformel in self._isotopfordeling:
@@ -85,7 +115,42 @@ class Molekylformel:
             m += forekomst*masse
         return m
 
-    def hent_isotopformel(self):
-        return self._isotopformel
+    @trenger_isotopfordeling
+    def print_isotopfordeling(self, n=10):
+
+        fordeling = sorted(self._isotopfordeling, key = lambda x: -x.beregn_forekomst())
+
+        print(f"\nIsotopfordeling til {self}")
+        print("------------------------------")
+        print(f"De {n}/{len(fordeling)} vanligste isotopsammensetningene:")
+
+        maks_forekomst = max(fordeling, key= lambda x: x.beregn_forekomst()).beregn_forekomst()
+
+        for isotopformel in fordeling[:n]:
+
+            relativ_forekomst = str("{:.6f}".format(100*isotopformel.beregn_forekomst()/maks_forekomst))[:6]
+            forekomst = str("{:.6f}".format(100*isotopformel.beregn_forekomst()))[:6]
+            masse = "{:.6f}".format(isotopformel.beregn_masse())
+
+            print(f"{forekomst} % | {relativ_forekomst} % | {masse} g/mol | {str(isotopformel)}")
+
+    def kalkuler_DBE(self): # dobbelt-bindingsekvivalenter
+
+        bindinger = Register.hent_bindinger()
+
+        antall_atomer = 0
+        antall_bindinger = 0
+        for grunnstoff,antall in self._molekylformel.items():
+
+            antall_bindinger += antall*bindinger[grunnstoff]
+            antall_atomer += antall
+            
+        DBE = antall_bindinger/2 - (antall_atomer-1)
+        
+        return DBE
+
+    @trenger_isotopfordeling
+    def hent_isotopfordeling(self):
+        return self._isotopfordeling
 
     

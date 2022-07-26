@@ -1,4 +1,4 @@
-Isotope;Atomic_weight;Natural_abundance
+Isotop;Atomvekt;Naturlig_forekomst
 1H;1.007825;99.985
 2H;2.014102;0.015
 12C;12.000000;98.9
