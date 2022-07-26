@@ -44,12 +44,15 @@ ch4.hent_isotopfordeling()
 
 Inneholder verktøy for deduksjon av isotopformel fra masse, enten med eller uten MS-topper.
 
+#### Uten MS-topper
+
+Først må et masseintervall defineres.
+
 ```python
 fra, til = [120.05, 120.07]  # definerer et masseintervall
 ```
 
-#### Uten MS-topper
-Massen undersøkes nærmere med:
+Dette kan så direkte brukes til å finne isotopformlene som oppfyller betingelsene.
 
 ```python
 Formelkalkulator.fra_masseintervall(fra,til)
