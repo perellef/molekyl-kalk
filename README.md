@@ -93,10 +93,10 @@ Ved store intervaller eksisterer det ofte mange formler. Det vil da være nyttig
 ```python
 begrensning = {}
 
-begrensning["1H"]  = "8-",   # 8-  -> høyst 8
-begrensning["12C"] = "3+",   # 3+  -> minst 3
-begrensning["14N"] = "1",    # 1   -> nøyaktig 1
-begrensning["16O"] = "1-3",  # 1-2 -> mellom 1 og 3, inklusivt
+begrensning["1H"]  = "8-",   #  ->  høyst 8
+begrensning["12C"] = "3+",   #  ->  minst 3
+begrensning["14N"] = "1",    #  ->  nøyaktig 1
+begrensning["16O"] = "1-3",  #  ->  mellom 1 og 3, inklusivt
 
 Formelkalkulator.fra_masseintervall(masse, begr=begrensning)
 ```
