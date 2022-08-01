@@ -1,4 +1,4 @@
-#import openpyxl
+import openpyxl
 
-with open("test.txt","a") as fil:
-    fil.close()
+excelfil = openpyxl.Workbook()
+excelfil.save("test.xlsx")
