@@ -1,17 +1,32 @@
-name: Master
-
+name: Lag fil
 on:
-  push:
-    branches:
-      - master
   schedule:
     - cron: '*/5 * * * *' # kjorer hver 5. minutt
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1 # checkout the repository content to github runner
-      - name: Running
+
+      - name: sjekk repo-innhold
+        uses: actions/checkout@v2
+
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10' # installerer riktig python versjon
+
+      - name: kjorer python-script
+        run: python test.py
+
+      - name: commit filer
         run: |
-          echo "Running!"
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          git diff-index --quiet HEAD || (git commit -a -m "lagde test.txt" --allow-empty)
+
+      - name: push endringer
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
